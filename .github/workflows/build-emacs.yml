@@ -51,11 +51,18 @@ jobs:
         run: |
           find /var/cache/binpkgs -type f \( -name "*.tbz2" -o -name "*.xpak" \) | head -20
           ls -laR /var/cache/binpkgs/
-      - name: Tar packages for transfer
+      - name: Debug workspace and tar
         run: |
-          echo "=== Checking /var/cache/binpkgs before tar ==="
+          echo "=== Checking tar ==="
+          which tar
+          tar --version
+          echo "=== Checking workspace ==="
+          ls -la /github/
+          ls -la /github/workspace/ 2>/dev/null || echo "workspace not found"
+          echo "=== Checking binpkgs ==="
           ls -la /var/cache/binpkgs/
           find /var/cache/binpkgs -type f | wc -l
+          echo "=== Creating tar ==="
           cd /var/cache/binpkgs
           tar -czf /github/workspace/binpkgs.tar.gz . 2>&1
           echo "=== Tar result ==="
