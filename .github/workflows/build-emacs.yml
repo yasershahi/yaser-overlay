@@ -47,9 +47,13 @@ jobs:
       - name: Build keepassxc
         run: |
           emerge --buildpkg --verbose app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-build.log
-      - name: Check built packages
+      - name: Check built packages (detailed)
         run: |
-          find /var/cache/binpkgs -type f \( -name "*.tbz2" -o -name "*.xpak" \) | head -20
+          echo "=== All files in PKGDIR ==="
+          find /var/cache/binpkgs -type f | sort
+          echo "=== Only .tbz2/.xpak ==="
+          find /var/cache/binpkgs -type f \( -name "*.tbz2" -o -name "*.xpak" \) | sort
+          echo "=== Directory tree ==="
           ls -laR /var/cache/binpkgs/
       - name: Ensure workspace exists
         run: |
@@ -57,7 +61,7 @@ jobs:
           ls -la /github/
       - name: Tar packages for transfer
         run: |
-          echo "=== Checking binpkgs ==="
+          echo "=== Final check before tar ==="
           find /var/cache/binpkgs -type f | wc -l
           ls -la /var/cache/binpkgs/
           echo "=== Creating tar ==="
@@ -65,6 +69,8 @@ jobs:
           tar -czf /github/workspace/binpkgs.tar.gz . 2>&1
           echo "=== Tar result ==="
           ls -la /github/workspace/binpkgs.tar.gz
+          echo "=== Tar contents ==="
+          tar -tzf /github/workspace/binpkgs.tar.gz | head -20
       - name: Upload tarball
         uses: actions/upload-artifact@v4
         with:
@@ -83,8 +89,10 @@ jobs:
           path: /tmp
       - name: Extract and verify
         run: |
+          ls -la /tmp/
           mkdir -p binpkgs
-          tar -xzf /tmp/binpkgs.tar.gz -C binpkgs 2>/dev/null || true
+          tar -xzf /tmp/binpkgs.tar.gz -C binpkgs 2>&1
+          echo "=== Extracted files ==="
           find binpkgs -type f | head -20
           ls -laR binpkgs/
       - name: Upload final artifacts
