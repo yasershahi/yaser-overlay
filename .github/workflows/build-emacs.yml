@@ -36,7 +36,7 @@ jobs:
           echo 'app-editors/emacs gtk xft' > /etc/portage/package.use/emacs
           echo 'media-video/vlc qt6' > /etc/portage/package.use/vlc
           echo 'app-admin/keepassxc yubikey' > /etc/portage/package.use/keepassxc
-          echo 'MAKEOPTS="-j$(nproc)"' >> /etc/portage/make.conf
+          echo "MAKEOPTS=\"-j$(nproc)\"" >> /etc/portage/make.conf
       - name: Show Portage config
         run: |
           echo "=== make.conf ==="
