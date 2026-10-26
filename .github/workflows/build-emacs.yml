@@ -14,9 +14,13 @@ jobs:
       FEATURES: "binpkg-logs buildpkg"
       PKGDIR: "/var/cache/binpkgs"
     steps:
-      - name: Sync gentoo repo & list profiles
+      - name: Sync gentoo repo (with retry)
         run: |
-          emerge --sync
+          for i in {1..3}; do
+            emerge --sync && break
+            echo "Sync failed, retry $i/3..."
+            sleep 10
+          done
           eselect profile list
       - name: Set profile (desktop if available, else base)
         run: |
