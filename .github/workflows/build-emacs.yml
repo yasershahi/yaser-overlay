@@ -25,8 +25,9 @@ jobs:
       - name: Set profile (latest desktop available)
         run: |
           # Try to find a desktop profile, fall back to base
-          if eselect profile list | grep -q "default/linux/amd64/.*/desktop$"; then
-            PROFILE=$(eselect profile list | grep 'default/linux/amd64/.*/desktop$' | tail -1 | awk '{print $2}')
+          # Pattern matches '.../desktop' followed by space or end of line
+          if eselect profile list | grep -q "default/linux/amd64/.*/desktop[[:space:]]"; then
+            PROFILE=$(eselect profile list | grep 'default/linux/amd64/.*/desktop[[:space:]]' | tail -1 | awk '{print $2}')
             echo "Selected profile: $PROFILE"
             eselect profile set "$PROFILE"
           else
