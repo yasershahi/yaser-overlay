@@ -22,9 +22,9 @@ jobs:
           eselect profile list
       - name: Set profile (latest desktop)
         run: |
-          LATEST_DESKTOP=$(eselect profile list | grep "default/linux/amd64/.*/desktop$" | tail -1 | awk '{print $2}' | sed 's/[][]//g')
+          LATEST_DESKTOP=$(eselect profile list | grep "default/linux/amd64/.*/desktop$" | sed 's/.*\[\([0-9]*\)\].*/\1/' | sort -n | tail -1)
           if [ -n "$LATEST_DESKTOP" ]; then
-            eselect profile set "$LATEST_DESKTOP"
+            eselect profile set "default/linux/amd64/${LATEST_DESKTOP}/desktop"
           else
             eselect profile set default/linux/amd64/23.0
           fi
