@@ -37,9 +37,22 @@ jobs:
           echo 'media-video/vlc qt6' > /etc/portage/package.use/vlc
           echo 'app-admin/keepassxc yubikey' > /etc/portage/package.use/keepassxc
           echo 'MAKEOPTS="-j$(nproc)"' >> /etc/portage/make.conf
+      - name: Show Portage config
+        run: |
+          echo "=== make.conf ==="
+          cat /etc/portage/make.conf
+          echo "=== portageq pkgdir ==="
+          portageq pkgdir
+          echo "=== Checking for binhost ==="
+          grep -r "PORTAGE_BINHOST" /etc/portage/ 2>/dev/null || echo "No binhost configured"
       - name: Build emacs (harfbuzz gtk xft)
         run: |
           emerge --verbose app-editors/emacs 2>&1 | tee /tmp/emacs-build.log
+      - name: Verify emacs installed
+        run: |
+          qlist -I emacs
+          equery list emacs
+          ls -la /var/db/pkg/app-editors/emacs-*/
       - name: Create emacs binary package
         run: |
           mkdir -p /github/workspace/binpkgs
@@ -53,6 +66,11 @@ jobs:
       - name: Build vlc
         run: |
           emerge --verbose media-video/vlc 2>&1 | tee /tmp/vlc-build.log
+      - name: Verify vlc installed
+        run: |
+          qlist -I vlc
+          equery list vlc
+          ls -la /var/db/pkg/media-video/vlc-*/
       - name: Create vlc binary package
         run: |
           quickpkg --include-config=y --include-unmodified-config=y -o /github/workspace/binpkgs media-video/vlc 2>&1 | tee /tmp/vlc-quickpkg.log
@@ -65,6 +83,11 @@ jobs:
       - name: Build keepassxc
         run: |
           emerge --verbose app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-build.log
+      - name: Verify keepassxc installed
+        run: |
+          qlist -I keepassxc
+          equery list keepassxc
+          ls -la /var/db/pkg/app-admin/keepassxc-*/
       - name: Create keepassxc binary package
         run: |
           quickpkg --include-config=y --include-unmodified-config=y -o /github/workspace/binpkgs app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-quickpkg.log
@@ -81,12 +104,14 @@ jobs:
           ls -laR /github/workspace/binpkgs/
           FILE_COUNT=$(find /github/workspace/binpkgs -type f | wc -l)
           echo "File count: $FILE_COUNT"
-      - name: Upload quickpkg logs
+      - name: Upload all logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: quickpkg-logs
-          path: /tmp/*-quickpkg.log
+          name: build-logs
+          path: |
+            /tmp/*-build.log
+            /tmp/*-quickpkg.log
           retention-days: 1
       - name: Tar packages for transfer
         run: |
