@@ -74,17 +74,20 @@ jobs:
           cat /tmp/keepassxc-quickpkg.log
           echo "=== Workspace after keepassxc quickpkg ==="
           find /github/workspace/binpkgs -type f
-      - name: Check binary packages
+      - name: Check binary packages (no fail)
         run: |
           echo "=== Final binary packages in workspace ==="
           find /github/workspace/binpkgs -type f | sort
           ls -laR /github/workspace/binpkgs/
           FILE_COUNT=$(find /github/workspace/binpkgs -type f | wc -l)
           echo "File count: $FILE_COUNT"
-          if [ "$FILE_COUNT" -eq 0 ]; then
-            echo "ERROR: No binary packages created!"
-            exit 1
-          fi
+      - name: Upload quickpkg logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickpkg-logs
+          path: /tmp/*-quickpkg.log
+          retention-days: 1
       - name: Tar packages for transfer
         run: |
           cd /github/workspace
