@@ -30,13 +30,13 @@ jobs:
             eselect profile set default/linux/amd64/23.0
           fi
           eselect profile show
-      - name: Configure Portage (FEATURES, PKGDIR, USE)
+      - name: Configure Portage (append FEATURES, set PKGDIR, USE)
         run: |
           mkdir -p /etc/portage/package.use
           echo 'app-editors/emacs gtk xft harfbuzz' > /etc/portage/package.use/emacs
           echo 'media-video/vlc qt6' > /etc/portage/package.use/vlc
           echo 'app-admin/keepassxc yubikey' > /etc/portage/package.use/keepassxc
-          echo 'FEATURES="buildpkg binpkg-logs"' >> /etc/portage/make.conf
+          echo 'FEATURES="${FEATURES} buildpkg binpkg-logs"' >> /etc/portage/make.conf
           echo 'PKGDIR="/var/cache/binpkgs"' >> /etc/portage/make.conf
           echo 'MAKEOPTS="-j$(nproc)"' >> /etc/portage/make.conf
       - name: Show Portage config
@@ -55,7 +55,8 @@ jobs:
           ACTUAL_PKGDIR=$(portageq pkgdir)
           echo "PKGDIR: $ACTUAL_PKGDIR"
           find "$ACTUAL_PKGDIR" -type f
-          grep -i "binary package\|tbz2\|creating.*package" /tmp/emacs-build.log | head -20
+          echo "=== emacs build log (tail) ==="
+          tail -50 /tmp/emacs-build.log
       - name: Build vlc
         run: |
           emerge --buildpkg --verbose media-video/vlc 2>&1 | tee /tmp/vlc-build.log
@@ -64,7 +65,8 @@ jobs:
           ACTUAL_PKGDIR=$(portageq pkgdir)
           echo "PKGDIR: $ACTUAL_PKGDIR"
           find "$ACTUAL_PKGDIR" -type f
-          grep -i "binary package\|tbz2\|creating.*package" /tmp/vlc-build.log | head -20
+          echo "=== vlc build log (tail) ==="
+          tail -50 /tmp/vlc-build.log
       - name: Build keepassxc
         run: |
           emerge --buildpkg --verbose app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-build.log
@@ -73,8 +75,9 @@ jobs:
           ACTUAL_PKGDIR=$(portageq pkgdir)
           echo "PKGDIR: $ACTUAL_PKGDIR"
           find "$ACTUAL_PKGDIR" -type f
-          grep -i "binary package\|tbz2\|creating.*package" /tmp/keepassxc-build.log | head -20
-      - name: Check all built packages (no fail)
+          echo "=== keepassxc build log (tail) ==="
+          tail -50 /tmp/keepassxc-build.log
+      - name: Check all built packages
         run: |
           ACTUAL_PKGDIR=$(portageq pkgdir)
           echo "Final PKGDIR: $ACTUAL_PKGDIR"
@@ -84,6 +87,10 @@ jobs:
           ls -laR "$ACTUAL_PKGDIR"/
           FILE_COUNT=$(find "$ACTUAL_PKGDIR" -type f | wc -l)
           echo "File count: $FILE_COUNT"
+          if [ "$FILE_COUNT" -eq 0 ]; then
+            echo "ERROR: No binary packages created!"
+            exit 1
+          fi
       - name: Ensure workspace exists
         run: |
           mkdir -p /github/workspace
