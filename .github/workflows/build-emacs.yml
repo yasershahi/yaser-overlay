@@ -14,10 +14,20 @@ jobs:
       FEATURES: "binpkg-logs buildpkg"
       PKGDIR: "/var/cache/binpkgs"
     steps:
-      - name: Sync gentoo repo & set profile
+      - name: Sync gentoo repo & list profiles
         run: |
           emerge --sync
-          eselect profile set default/linux/amd64/23.0/desktop
+          eselect profile list
+      - name: Set profile (desktop if available, else base)
+        run: |
+          if eselect profile list | grep -q "default/linux/amd64/23.0/desktop"; then
+            eselect profile set default/linux/amd64/23.0/desktop
+          elif eselect profile list | grep -q "default/linux/amd64/17.1/desktop"; then
+            eselect profile set default/linux/amd64/17.1/desktop
+          else
+            eselect profile set default/linux/amd64/23.0
+          fi
+          eselect profile show
       - name: Configure USE flags
         run: |
           mkdir -p /etc/portage/package.use
