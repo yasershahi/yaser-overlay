@@ -3,41 +3,34 @@ name: Build custom binpkgs (emacs + harfbuzz, vlc, keepassxc)
 on:
   workflow_dispatch:
   push:
-    paths: ['app-editors/emacs/**', 'media-video/vlc/**', 'app-admin/keepassxc/**', '.github/workflows/build-emacs.yml']
+    paths: ['.github/workflows/build-emacs.yml']
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container: gentoo/stage3:amd64
     steps:
-      - uses: actions/checkout@v4
-      - name: Sync gentoo repo
+      - name: Sync gentoo repo & set profile
         run: |
-          mkdir -p /var/db/repos/gentoo
           emaint sync -a
-      - name: Setup overlay
-        run: |
-          mkdir -p /etc/portage/repos.conf
-          echo '[yaser]' > /etc/portage/repos.conf/yaser.conf
-          echo 'location = /workspace' >> /etc/portage/repos.conf/yaser.conf
-          echo 'priority = 10' >> /etc/portage/repos.conf/yaser.conf
-      - name: Configure USE flags for all 3 packages
+          eselect profile set default/linux/amd64/23.0/desktop
+      - name: Configure USE flags
         run: |
           mkdir -p /etc/portage/package.use
           echo 'app-editors/emacs gtk xft harfbuzz' > /etc/portage/package.use/emacs
-          echo 'media-video/vlc +qt6' >> /etc/portage/package.use/vlc
-          echo 'app-admin/keepassxc +yubikey' >> /etc/portage/package.use/keepassxc
+          echo 'media-video/vlc qt6' > /etc/portage/package.use/vlc
+          echo 'app-admin/keepassxc yubikey' > /etc/portage/package.use/keepassxc
       - name: Build emacs (harfbuzz gtk xft)
         run: |
-          emerge --buildpkg --getbinpkg=n --verbose app-editors/emacs 2>&1 | tee /tmp/emacs-build.log || true
+          emerge --buildpkg --verbose app-editors/emacs 2>&1 | tee /tmp/emacs-build.log
       - name: Build vlc
         run: |
-          emerge --buildpkg --getbinpkg=n --verbose media-video/vlc 2>&1 | tee /tmp/vlc-build.log || true
+          emerge --buildpkg --verbose media-video/vlc 2>&1 | tee /tmp/vlc-build.log
       - name: Build keepassxc
         run: |
-          emerge --buildpkg --getbinpkg=n --verbose app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-build.log || true
+          emerge --buildpkg --verbose app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-build.log
       - name: Check built packages
-        run: ls /usr/portage/packages/ 2>/dev/null || echo "No binary packages found (check logs)"
+        run: ls -la /usr/portage/packages/
       - name: Upload artifacts (binary packages)
         uses: actions/upload-artifact@v4
         with:
