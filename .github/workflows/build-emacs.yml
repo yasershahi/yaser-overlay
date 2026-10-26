@@ -39,11 +39,16 @@ jobs:
           emerge --buildpkg --verbose app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-build.log
       - name: Check built packages (full tree)
         run: |
-          find /var/cache/binpkgs -type f -name "*.tbz2" -o -name "*.xpak" -o -name "*.tbz2" | head -20
+          find /var/cache/binpkgs -type f \( -name "*.tbz2" -o -name "*.xpak" \) | head -20
           ls -laR /var/cache/binpkgs/
+      - name: Copy packages to workspace
+        run: |
+          mkdir -p /github/workspace/binpkgs
+          cp -r /var/cache/binpkgs/* /github/workspace/binpkgs/ 2>/dev/null || true
+          find /github/workspace/binpkgs -type f | head -20
       - name: Upload artifacts (binary packages)
         uses: actions/upload-artifact@v4
         with:
           name: gentoo-binpkgs
-          path: /var/cache/binpkgs/
+          path: binpkgs/
           retention-days: 30
