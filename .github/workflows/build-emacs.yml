@@ -47,25 +47,40 @@ jobs:
       - name: Build keepassxc
         run: |
           emerge --buildpkg --verbose app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-build.log
-      - name: Check built packages (full tree)
+      - name: Check built packages
         run: |
           find /var/cache/binpkgs -type f \( -name "*.tbz2" -o -name "*.xpak" \) | head -20
           ls -laR /var/cache/binpkgs/
-      - name: Copy packages to workspace
+      - name: Tar packages for transfer
         run: |
-          mkdir -p /github/workspace/binpkgs
-          cp -r /var/cache/binpkgs/* /github/workspace/binpkgs/ 2>/dev/null || true
-          echo "=== Workspace binpkgs ==="
-          find /github/workspace/binpkgs -type f | head -20
-          ls -laR /github/workspace/binpkgs/
-      - name: Verify workspace from host perspective
+          cd /var/cache/binpkgs
+          tar -czf /github/workspace/binpkgs.tar.gz . 2>/dev/null || true
+          ls -la /github/workspace/binpkgs.tar.gz
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: binpkgs-tarball
+          path: /github/workspace/binpkgs.tar.gz
+          retention-days: 1
+
+  upload:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: binpkgs-tarball
+          path: /tmp
+      - name: Extract and verify
         run: |
-          echo "=== Host workspace check ==="
-          ls -la /github/workspace/
-          ls -la /github/workspace/binpkgs/ 2>/dev/null || echo "binpkgs not found"
-      - name: Upload artifacts (binary packages)
+          mkdir -p binpkgs
+          tar -xzf /tmp/binpkgs.tar.gz -C binpkgs 2>/dev/null || true
+          find binpkgs -type f | head -20
+          ls -laR binpkgs/
+      - name: Upload final artifacts
         uses: actions/upload-artifact@v4
         with:
           name: gentoo-binpkgs
-          path: /github/workspace/binpkgs/
+          path: binpkgs/
           retention-days: 30
