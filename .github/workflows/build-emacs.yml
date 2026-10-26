@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: gentoo/stage3:amd64
+    container: gentoo/stage3:amd64-20241001
     env:
       MAKEOPTS: "-j$(nproc)"
     steps:
@@ -20,14 +20,9 @@ jobs:
             sleep 10
           done
           eselect profile list
-      - name: Set profile (latest desktop)
+      - name: Set profile (desktop)
         run: |
-          LATEST_DESKTOP=$(eselect profile list | grep "default/linux/amd64/.*/desktop$" | sed 's/.*\[\([0-9]*\)\].*/\1/' | sort -n | tail -1)
-          if [ -n "$LATEST_DESKTOP" ]; then
-            eselect profile set "default/linux/amd64/${LATEST_DESKTOP}/desktop"
-          else
-            eselect profile set default/linux/amd64/23.0
-          fi
+          eselect profile set default/linux/amd64/23.0/desktop
           eselect profile show
       - name: Configure Portage (USE)
         run: |
