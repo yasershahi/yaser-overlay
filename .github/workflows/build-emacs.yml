@@ -50,13 +50,31 @@ jobs:
       - name: Build emacs (harfbuzz gtk xft)
         run: |
           emerge --buildpkg --verbose app-editors/emacs 2>&1 | tee /tmp/emacs-build.log
+      - name: Check emacs binary package
+        run: |
+          ACTUAL_PKGDIR=$(portageq pkgdir)
+          echo "=== Checking for emacs binary package ==="
+          find "$ACTUAL_PKGDIR" -name "*emacs*" -type f
+          grep -i "binary package\|tbz2\|creating.*package" /tmp/emacs-build.log | head -20
       - name: Build vlc
         run: |
           emerge --buildpkg --verbose media-video/vlc 2>&1 | tee /tmp/vlc-build.log
+      - name: Check vlc binary package
+        run: |
+          ACTUAL_PKGDIR=$(portageq pkgdir)
+          echo "=== Checking for vlc binary package ==="
+          find "$ACTUAL_PKGDIR" -name "*vlc*" -type f
+          grep -i "binary package\|tbz2\|creating.*package" /tmp/vlc-build.log | head -20
       - name: Build keepassxc
         run: |
           emerge --buildpkg --verbose app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-build.log
-      - name: Check built packages (detailed)
+      - name: Check keepassxc binary package
+        run: |
+          ACTUAL_PKGDIR=$(portageq pkgdir)
+          echo "=== Checking for keepassxc binary package ==="
+          find "$ACTUAL_PKGDIR" -name "*keepassxc*" -type f
+          grep -i "binary package\|tbz2\|creating.*package" /tmp/keepassxc-build.log | head -20
+      - name: Check all built packages
         run: |
           ACTUAL_PKGDIR=$(portageq pkgdir)
           echo "Actual PKGDIR: $ACTUAL_PKGDIR"
