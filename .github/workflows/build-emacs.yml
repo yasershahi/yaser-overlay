@@ -25,14 +25,15 @@ jobs:
           echo 'app-admin/keepassxc +yubikey' >> /etc/portage/package.use/keepassxc
       - name: Build emacs (harfbuzz gtk xft)
         run: |
-          emerge --buildpkg --getbinpkg=n --onlydeps=n --verbose app-editors/emacs 2>&1 | tee /tmp/emacs-build.log || true
+          emerge --buildpkg --getbinpkg=n --verbose app-editors/emacs 2>&1 | tee /tmp/emacs-build.log || true
       - name: Build vlc
         run: |
-          emerge --buildpkg --getbinpkg=n --onlydeps=n --verbose media-video/vlc 2>&1 | tee /tmp/vlc-build.log || true
+          emerge --buildpkg --getbinpkg=n --verbose media-video/vlc 2>&1 | tee /tmp/vlc-build.log || true
       - name: Build keepassxc
         run: |
-          emerge --buildpkg --getbinpkg=n --onlydeps=n --verbose app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-build.log || true
-          ls /usr/portage/packages/ 2>/dev/null || echo "Build completed (check /usr/portage/packages/)"
+          emerge --buildpkg --getbinpkg=n --verbose app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-build.log || true
+      - name: Check built packages
+        run: ls /usr/portage/packages/ 2>/dev/null || echo "No binary packages found (check logs)"
       - name: Upload artifacts (binary packages)
         uses: actions/upload-artifact@v4
         with:
