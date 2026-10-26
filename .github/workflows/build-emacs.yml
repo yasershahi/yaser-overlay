@@ -19,13 +19,18 @@ jobs:
             echo "Sync failed, retry $i/3..."
             sleep 10
           done
+      - name: Show available profiles
+        run: |
           eselect profile list
       - name: Set profile (latest desktop available)
         run: |
           # Try to find a desktop profile, fall back to base
           if eselect profile list | grep -q "default/linux/amd64/.*/desktop$"; then
-            eselect profile set "$(eselect profile list | grep 'default/linux/amd64/.*/desktop$' | tail -1 | awk '{print $2}')"
+            PROFILE=$(eselect profile list | grep 'default/linux/amd64/.*/desktop$' | tail -1 | awk '{print $2}')
+            echo "Selected profile: $PROFILE"
+            eselect profile set "$PROFILE"
           else
+            echo "No desktop profile found, using base"
             eselect profile set default/linux/amd64/23.0
           fi
           eselect profile show
