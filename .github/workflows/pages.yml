@@ -1,7 +1,7 @@
 name: pages
 
-# Static site only: publishes publish/ (index + guides). No building,
-# no compiling, no binpkgs.
+# Static site (publish/) + references binpkg build workflow (build-emacs.yml).
+# The overlay now also builds: emacs (harfbuzz), vlc, keepassxc.
 
 on:
   workflow_dispatch:
