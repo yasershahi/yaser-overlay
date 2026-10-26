@@ -58,9 +58,14 @@ jobs:
           echo "=== Workspace binpkgs ==="
           find /github/workspace/binpkgs -type f | head -20
           ls -laR /github/workspace/binpkgs/
+      - name: Verify workspace from host perspective
+        run: |
+          echo "=== Host workspace check ==="
+          ls -la /github/workspace/
+          ls -la /github/workspace/binpkgs/ 2>/dev/null || echo "binpkgs not found"
       - name: Upload artifacts (binary packages)
         uses: actions/upload-artifact@v4
         with:
           name: gentoo-binpkgs
-          path: binpkgs/
+          path: /github/workspace/binpkgs/
           retention-days: 30
