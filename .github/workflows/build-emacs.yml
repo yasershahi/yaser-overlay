@@ -53,8 +53,12 @@ jobs:
           ls -laR /var/cache/binpkgs/
       - name: Tar packages for transfer
         run: |
+          echo "=== Checking /var/cache/binpkgs before tar ==="
+          ls -la /var/cache/binpkgs/
+          find /var/cache/binpkgs -type f | wc -l
           cd /var/cache/binpkgs
-          tar -czf /github/workspace/binpkgs.tar.gz . 2>/dev/null || true
+          tar -czf /github/workspace/binpkgs.tar.gz . 2>&1
+          echo "=== Tar result ==="
           ls -la /github/workspace/binpkgs.tar.gz
       - name: Upload tarball
         uses: actions/upload-artifact@v4
