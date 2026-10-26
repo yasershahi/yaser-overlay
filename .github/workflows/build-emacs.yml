@@ -20,12 +20,11 @@ jobs:
             sleep 10
           done
           eselect profile list
-      - name: Set profile (desktop if available, else base)
+      - name: Set profile (latest desktop)
         run: |
-          if eselect profile list | grep -q "default/linux/amd64/23.0/desktop"; then
-            eselect profile set default/linux/amd64/23.0/desktop
-          elif eselect profile list | grep -q "default/linux/amd64/17.1/desktop"; then
-            eselect profile set default/linux/amd64/17.1/desktop
+          LATEST_DESKTOP=$(eselect profile list | grep "default/linux/amd64/.*/desktop$" | tail -1 | awk '{print $2}' | sed 's/[][]//g')
+          if [ -n "$LATEST_DESKTOP" ]; then
+            eselect profile set "$LATEST_DESKTOP"
           else
             eselect profile set default/linux/amd64/23.0
           fi
