@@ -44,21 +44,39 @@ jobs:
         run: |
           mkdir -p /github/workspace/binpkgs
           quickpkg --include-config=y --include-unmodified-config=y -o /github/workspace/binpkgs app-editors/emacs 2>&1 | tee /tmp/emacs-quickpkg.log
+      - name: Debug emacs quickpkg
+        run: |
+          echo "=== emacs quickpkg log ==="
+          cat /tmp/emacs-quickpkg.log
+          echo "=== Workspace after emacs quickpkg ==="
+          find /github/workspace/binpkgs -type f
       - name: Build vlc
         run: |
           emerge --verbose media-video/vlc 2>&1 | tee /tmp/vlc-build.log
       - name: Create vlc binary package
         run: |
           quickpkg --include-config=y --include-unmodified-config=y -o /github/workspace/binpkgs media-video/vlc 2>&1 | tee /tmp/vlc-quickpkg.log
+      - name: Debug vlc quickpkg
+        run: |
+          echo "=== vlc quickpkg log ==="
+          cat /tmp/vlc-quickpkg.log
+          echo "=== Workspace after vlc quickpkg ==="
+          find /github/workspace/binpkgs -type f
       - name: Build keepassxc
         run: |
           emerge --verbose app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-build.log
       - name: Create keepassxc binary package
         run: |
           quickpkg --include-config=y --include-unmodified-config=y -o /github/workspace/binpkgs app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-quickpkg.log
+      - name: Debug keepassxc quickpkg
+        run: |
+          echo "=== keepassxc quickpkg log ==="
+          cat /tmp/keepassxc-quickpkg.log
+          echo "=== Workspace after keepassxc quickpkg ==="
+          find /github/workspace/binpkgs -type f
       - name: Check binary packages
         run: |
-          echo "=== Binary packages in workspace ==="
+          echo "=== Final binary packages in workspace ==="
           find /github/workspace/binpkgs -type f | sort
           ls -laR /github/workspace/binpkgs/
           FILE_COUNT=$(find /github/workspace/binpkgs -type f | wc -l)
