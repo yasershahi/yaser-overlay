@@ -9,10 +9,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: gentoo/stage3:amd64
+    env:
+      MAKEOPTS: "-j$(nproc)"
+      FEATURES: "binpkg-logs"
     steps:
       - name: Sync gentoo repo & set profile
         run: |
-          emaint sync -a
+          emerge --sync
           eselect profile set default/linux/amd64/23.0/desktop
       - name: Configure USE flags
         run: |
@@ -30,10 +33,10 @@ jobs:
         run: |
           emerge --buildpkg --verbose app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-build.log
       - name: Check built packages
-        run: ls -la /usr/portage/packages/
+        run: ls -la /var/cache/binpkgs/
       - name: Upload artifacts (binary packages)
         uses: actions/upload-artifact@v4
         with:
           name: gentoo-binpkgs
-          path: /usr/portage/packages/
+          path: /var/cache/binpkgs/
           retention-days: 30
