@@ -11,7 +11,8 @@ jobs:
     container: gentoo/stage3:amd64
     env:
       MAKEOPTS: "-j$(nproc)"
-      FEATURES: "binpkg-logs"
+      FEATURES: "binpkg-logs buildpkg"
+      PKGDIR: "/var/cache/binpkgs"
     steps:
       - name: Sync gentoo repo & set profile
         run: |
@@ -23,6 +24,10 @@ jobs:
           echo 'app-editors/emacs gtk xft harfbuzz' > /etc/portage/package.use/emacs
           echo 'media-video/vlc qt6' > /etc/portage/package.use/vlc
           echo 'app-admin/keepassxc yubikey' > /etc/portage/package.use/keepassxc
+      - name: Show PKGDIR
+        run: |
+          echo "PKGDIR=$PKGDIR"
+          portageq pkgdir
       - name: Build emacs (harfbuzz gtk xft)
         run: |
           emerge --buildpkg --verbose app-editors/emacs 2>&1 | tee /tmp/emacs-build.log
@@ -32,8 +37,10 @@ jobs:
       - name: Build keepassxc
         run: |
           emerge --buildpkg --verbose app-admin/keepassxc 2>&1 | tee /tmp/keepassxc-build.log
-      - name: Check built packages
-        run: ls -la /var/cache/binpkgs/
+      - name: Check built packages (full tree)
+        run: |
+          find /var/cache/binpkgs -type f -name "*.tbz2" -o -name "*.xpak" -o -name "*.tbz2" | head -20
+          ls -laR /var/cache/binpkgs/
       - name: Upload artifacts (binary packages)
         uses: actions/upload-artifact@v4
         with:
