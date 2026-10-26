@@ -11,6 +11,10 @@ jobs:
     container: gentoo/stage3:amd64
     steps:
       - uses: actions/checkout@v4
+      - name: Sync gentoo repo
+        run: |
+          mkdir -p /var/db/repos/gentoo
+          emaint sync -a
       - name: Setup overlay
         run: |
           mkdir -p /etc/portage/repos.conf
