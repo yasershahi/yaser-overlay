@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: gentoo/stage3:amd64
+    container: gentoo/stage3:amd64-20240701
     env:
       MAKEOPTS: "-j$(nproc)"
     steps:
